@@ -2,7 +2,7 @@ import random
 import re
 import os
 from unicodedata import normalize
-import ahorcado_dolls
+from ahorcado_dolls import ahorcado_display, ahorcado_title
 
 letters_used = []
 
@@ -33,18 +33,20 @@ def spawn_game(word):
     letters_from_word_list[:0] = word
 
     anonimous_letters_list = list(map(looker_for_word, letters_from_word_list))
-    print(*anonimous_letters_list, '\n')
 
     return anonimous_letters_list
 
 
-def game_loop(displays_per_level, failed_tries, target_word):
-
+def game_loop(displays_per_level, target_word, level):
+    failed_tries = 0
     while True:
         os.system('cls')
-        print(displays_per_level[failed_tries])
-        print('                               ', 'Letras: ', *letters_used, '\n')
         list_game = spawn_game(target_word)
+
+        print(displays_per_level[failed_tries])
+        print('                               ', 'Nivel: {}'.format(level))
+        print('                               ', 'Letras: ', *letters_used, '\n')
+        print('          ', *list_game, '\n')
         letter = strip_accents_and_ñ(
             input('Por favor, introduce una letra \n'
                   'introduce la palabra finalizar para resolver \n'
@@ -71,7 +73,8 @@ def game_loop(displays_per_level, failed_tries, target_word):
         if not'_' in list_game:
             print('Enhorabuena has ganado')
             break
-        elif failed_tries == len(displays_per_level):
+
+        if failed_tries == len(displays_per_level):
             print('Lo siento, has perdido, la palabra era {}'.format(target_word))
             break
 
@@ -88,12 +91,17 @@ def looker_for_word(letter_target):
 def on_error_loop(phrase):
     while True:
         letter = input(phrase).lower()
-        if str.isdigit(letter) & len(letter) == 1:
+        if str.isdigit(letter):
+            return letter
+        if len(letter) == 1:
             return letter
 
 
-def on_error_level(level):
-    pass
+def on_error_level(phrase):
+    while True:
+        number = input(phrase).lower()
+        if str.isdigit(number) and int(number) < 3:
+            return int(number)
 
 
 def resolve(target_word):
@@ -115,18 +123,27 @@ def main():
     text_cleaner()
 
     os.system('cls')
-    print(ahorcado_dolls.ahorcado_title)
+    print(ahorcado_title)
 
     another_game = True
     while another_game:
-        failed_tries = 0
         target_word = charge_words_and_random()
 
-        level = int(input('Bienvenido al Ahorcado, por favor, selecciona el nivel del 1 al 3: '))
-        displays_per_level = ahorcado_dolls.ahorcado_display(level)
-        game_loop(displays_per_level, failed_tries, target_word)
+        level = input('Bienvenido al Ahorcado, por favor, selecciona el nivel del 1 al 3: ')
+        if level == '':
+            level = 1
+        elif str.isdigit(level) and int(level) > 3:
+            level = on_error_level('Por favor, introduce un número del 1 al 3: ')
+        else:
+            level = int(level)
 
-        another = input('¿Deseas continuar? y/n')
+        displays_per_level = ahorcado_display(level)
+
+        game_loop(displays_per_level, target_word, level)
+
+        letters_used.clear()
+
+        another = input('¿Deseas continuar? y/n ')
         if another.lower() != 'y':
             another_game = False
 

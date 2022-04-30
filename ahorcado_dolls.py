@@ -270,7 +270,7 @@ def ahorcado_display(difficult=1):
         elif difficult == 2:
             return ahorcado_list[::2]
         elif difficult == 3:
-            return ahorcado_list[::3]
+            return [*ahorcado_list[::3], ahorcado_list[-1]]
         else:
             raise Exception('El nivel tiene que ser entre 1 y 3')
     except Exception as e:
